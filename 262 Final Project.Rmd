@@ -1,0 +1,338 @@
+---
+title: "262 Final Project"
+author: "Shengyi Jia, Qianqian Wei, Jiayue Meng"
+date: "12/11/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1.
+```{r}
+hawaii<-read.csv("hawaii12(1).csv")
+```
+
+a. 
+```{r}
+library(MASS)                 
+island <- hawaii$island
+island.freq <- table(island)
+island.relfreq <- island.freq/nrow(hawaii)
+island.relfreq
+```
+
+
+b. 
+```{r}
+af <- table(hawaii$island)  #absolute frequency table of island
+af
+barplot(af, main="Barplot of Island Visited", col=c("red","pink","green","blue"))
+```
+
+
+c. 
+
+
+$H_0$: $p_1$=$p_2$=$p_3$=$p_4$=0.25  vs.  $H_1$:At least one of them doesn't hold
+
+
+X-squared = 4.0534, p-value = 0.2558 > $\alpha$=0.05
+
+
+So, we fail to reject $H_0$.
+
+
+We have insufficient evidence to conclude that the proportion of visitors to each island are different from one another.
+
+```{r}
+chisq.test(c(29,26,35,41), p=c(0.25,0.25,0.25,0.25))
+```
+
+
+3.
+
+
+a. 
+
+
+Min=8.9, Q1=16.70, Median=21.20, Q3=31.35, Max=60.30
+```{r}
+fivenum(hawaii$age)
+```
+
+b. 
+```{r}
+boxplot(hawaii$age, main="Boxplot of Age", ylab="Visitors’ Ages")
+```
+
+c. 
+
+
+The median of visitors' age is 24.64351.
+
+
+Visitors' age has one center. It is asymmetrical and right-skewed.
+```{r}
+hist(hawaii$age,main="Histogram of Age", col="yellow")
+abline(v = median(hawaii$age), col = "red")
+text(median(hawaii$age)+10, 20, substitute(paste(tilde(x),"=", m), list(m = mean(hawaii$age))), col = "red")
+```
+
+
+d. 
+
+
+The standard deviation of age is 11.11209.
+```{r}
+sd(hawaii$age)
+```
+
+
+e. 
+
+
+The skewness of age is 1.000438.
+```{r} 
+library(moments)
+skewness(hawaii$age)
+```
+
+
+f. 
+
+
+We are 90% confident that 25.89408 and below captures the true mean age of visitors.
+```{r}
+t.test(hawaii$age,alternative="less",conf.level = 0.9)
+```
+
+
+g. 
+
+
+The proportion of ages that falls within one standard deviations = 0.111019, 
+two standard deviations = 0.4138111, and three standard deviations = 0.7829747.
+
+
+For empirical rule, the proportion falls within 1 sd is about 0.68, 2 sd is about 0.95, 3 sd is about 0.997. 
+
+
+Since the data of age is right-skewed, the proportion of ages that falls within 1,2, and 3 sd differ a lot from that of empirical rule. So, the empirical rule does not do a good job at describing age. 
+```{r}
+sd(hawaii$age)
+mean(hawaii$age)
+pnorm(11.11209, mean = 24.64351, sd=11.11209)-pnorm(-11.11209, mean = 24.64351, sd=11.11209)
+pnorm(2*11.11209, mean = 24.64351, sd=11.11209)-pnorm(2*(-11.11209), mean = 24.64351, sd=11.11209)
+pnorm(3*11.11209, mean = 24.64351, sd=11.11209)-pnorm(3*(-11.11209), mean = 24.64351, sd=11.11209)
+```
+
+
+h. 
+
+
+We can see from the plot that the data is right-skewed because observed data deviate from the theoretical quantiles of the normal distribution.
+```{r}
+qqnorm(hawaii$age, main = "Age")
+qqline(hawaii$age)
+```
+
+i. 
+
+
+The optimal transformation is lambda = -0.1010101
+```{r}
+library(MASS)
+bc1 <- boxcox(hawaii$age ~ 1)
+bc1$x[bc1$y == max(bc1$y)]
+```
+
+
+j. 
+
+
+We can see from plots that log transformed data are more approximately normally distributed than original data does. After log transformation, the data is closer to normally distribution. By using log transformations, we reduced skewness and changed the spread of the data from right-skewed to approximately normally distributed, so that we can apply broader number of tests to the data.
+
+```{r}
+log1 <- log(hawaii$age)
+hist(log1, xlab = "Age of Visitors", main = "Histogram of the Log Transformed Data")
+```
+
+
+4.
+
+
+a.
+```{r}
+hawaii <- read.csv("C:/Users/Joyce/Documents/R/hawaii12(1).csv")
+addmargins(table(hawaii$reason, hawaii$island))
+```
+
+
+b.
+```{r}
+tab1 <- table(hawaii$reason, hawaii$island)
+barplot(tab1, xlab="Island", legend=T, args.legend=list(row.names(hawaii$island),x=1.15,y=40),col=c("blue","green"))
+```
+
+
+c.
+We conduct a chi-sqaure test of independency what $H_0:$ there is no relationship between the island visited and the reason for visiting vs. $H_1:$ there is a relationship between the island visited and the reason for visiting, with $\alpha=0.05$
+```{r}
+chisq.test(tab1 , correct=F)
+```
+With a test statistic of 24.882 and p-value of 1.635e-05 < $\alpha$, we reject the null hypothesis and conclude that there is relationship between the island visited and the reason of visiting.
+
+
+5.
+
+
+a.
+```{r}
+boxplot(hawaii$length~hawaii$season,xlab='season',ylab='length of stay')
+```
+
+b.
+
+
+we conduct a ANOVA test that $H_0:~\mu_f=\mu_w=\mu_{su}=\mu_{sp}$ vs. $H_1:$ at least one of the equality does not hold, with $\alpha=0.05$
+```{r}
+aov1 <- aov(hawaii$length~hawaii$season)
+anova(aov1)
+```
+With a test statistic of 124.83 and a p-value of 2.2e-16 < $\alpha$, we reject the null hypothesis and conclude that the mean length of stay differs by season.
+
+
+c. 
+
+
+Firstly we have $\alpha_*=\frac{\alpha_{FWE}}{(_2^4)}\approx0.0083$
+```{r}
+pairwise.t.test(hawaii$length,hawaii$season, p.adj="bonferroni")
+```
+According to the table, since $2e-16 < \alpha_*$, we can conclude that winter is significantly different from the other three seasons.
+
+
+6.
+
+
+a.
+
+
+We conduct a hypothesis test that $H_0:\sigma^2_F=\sigma^2_R$ vs. $H_1:\sigma^2_F\ne\sigma^2_R$, with $\alpha=0.01$
+```{r}
+var.test(hawaii$age~hawaii$firstTime)
+```
+We obatain a test statistic of 1.1374 and p-value of 0.6006 > $\alpha$, therefore we retain the null hypothesis and conclude that the variance of the age is the same for those visiting Hawaii for the first time and those making a return visit.
+
+
+
+b.
+
+
+We conduct a two-sample t-test with equal variance that $H_0:\mu_R-\mu_R\geq0$ vs. $H_1:\mu_F-\mu_R<0$, iwith $\alpha=0.05$
+```{r}
+first_time <- hawaii$age[hawaii$firstTime == "first time"]
+return <- hawaii$age[hawaii$firstTime== "return"]
+t.test(first_time, return, var.equal=T, alternative = 'less')
+```
+With a test statistic of 0.38131 and a p-value of 0.6482 > $\alpha$, we retian the null hypothesis and conclude that the mean age of first-time visitors is greater ot equal to the mean age of return visitors.
+
+
+7.
+
+a.
+
+We can see homoscedasticity and linearity from the plot
+
+Linear regression seems appropriate.
+```{r}
+plot(hawaii$length,hawaii$cost,xlab="Length of stay",ylab="Cost of trip", pch=4)
+```
+
+b.
+
+Spearman correlation coefficient between length of stay and cost of trip
+```{r}
+cor(hawaii$length,hawaii$cost,method="spearman")
+```
+
+
+c.
+
+
+$H_0: \rho = 0$ v.s. $H_1: \rho \ne 0$
+
+t = 28.108; p-value < 2.2e-16 < $\alpha = 0.05$
+
+We reject the null hypothesis and conclude that the Pearson correlation between length of stay and cost of trip is different from 0.
+```{r}
+cor.test(hawaii$length,hawaii$cost)
+```
+
+
+d.
+
+Regression equation: y = 1661.6 + 109.2x
+```{r}
+lm1 <- lm(hawaii$cost~hawaii$length)
+lm1
+```
+
+
+
+e.
+
+
+We are 90 percent confident that the coefficient of length of stay lies in (102,788, 115.6641).
+```{r}
+confint(lm1, level=0.9)
+```
+
+
+
+f.
+
+
+$R^2 = 0.8596$
+
+Most of the points lie on the regression line. $85.96\%$ variability of y is due to different value of x.
+```{r}
+summary(lm1)
+```
+
+
+g.
+
+Residual plot shows random scatter around the line x=0. Thus, the linearity assumption is met. 
+
+Normal Q-Q plot shows a strong diagonal line. Thus, the normality assumption is met.
+```{r}
+par(mfrow=c(2,2))
+plot(lm1)
+```
+
+
+h.
+
+Regression equation: y = 1577.894 + 107.873$x_1$ + 143.332$x_2$ + 174.191$x_3$ + 64.873$x_4$
+```{r}
+lm2 <- lm(hawaii$cost ~ hawaii$length+hawaii$island)
+summary(lm2)
+```
+
+
+i.
+
+
+$H_0$: $\beta_1 = \beta_2 = ... = \beta_p$ = 0
+
+$H_1$: at least one of the equalities does not hold
+
+F = 9.4808; p-value = 1.078e-05 < $\alpha = 0.05$
+
+We reject the null hypothesis and conclude that island visited significantly predicts the cost of trip once we have accounted for length of stay.
+```{r}
+anova(lm1, lm2)
+```
